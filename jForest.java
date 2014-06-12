@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.HashSet;
 
-public final class MagicForest {
+public final class jForest {
     public final static int BUFFER_SIZE = 1024*500;
     static final class ForList {
 	public int forests[];
@@ -221,7 +221,7 @@ public final class MagicForest {
     
     public static void main(String[] args) {
 	if (args.length != 3) {
-	    System.err.println("USAGE: " + MagicForest.class.getSimpleName() +
+	    System.err.println("USAGE: " + jForest.class.getSimpleName() +
 			       " <goats> <wolves> <lions>");
 	    System.exit(-1);
 	}
