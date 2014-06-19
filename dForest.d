@@ -4,8 +4,58 @@ import std.stdio;
 import std.array;
 import std.range;
 import std.format;
+import std.bitmanip;
 
 //Compile with ldc2 -O5 -release -disable-boundscheck MagicForest.d
+
+enum BITS_FOR_HASH = 10;
+enum MAX_VAL = 0b11111111_11111111_11111111_11111111;
+enum MASK = MAX_VAL >> (32 - BITS_FOR_HASH*2);
+
+struct ForMap{
+  BitArray bits;
+  int max;
+  int cap;
+
+  this(int cap){
+    this.max = 0;
+    this.cap = cap;
+    this.bits.length = cap;
+  }
+
+  forest_t[] uniquify(forest_t[] fors){
+    this.addForests(fors);
+    return this.getForests(fors.length);
+  }
+
+  void addForests(forest_t[] fors){
+    foreach(f; fors){
+      int hash = 0;
+      hash |= f.goats;
+      hash <<= BITS_FOR_HASH;
+      hash |= f.wolves;
+      hash <<= BITS_FOR_HASH;
+      hash |= f.lions;
+      this.bits[hash] = true;
+      if (hash > this.max){
+	this.max=hash;
+      }
+    }
+  }
+  forest_t[] getForests(in size_t maxLen) {  
+    forest_t[] forests = uninitializedArray!(forest_t[])(maxLen);
+    size_t forPos = 0;
+    for(auto i = 0; i < this.max; i++){
+      if(bits[i] == true){
+	forests[forPos] = forest_t(i>>(BITS_FOR_HASH*2) & MASK, 
+				   i>>(BITS_FOR_HASH*1) & MASK,
+				   i>>(BITS_FOR_HASH*0) & MASK);
+	forPos++;
+      }
+    }
+    return forests[$ .. forPos];
+  }
+}
 
 struct forest_t{
   align:
@@ -58,12 +108,14 @@ forest_t[] quickSort(forest_t[] fors) pure nothrow {
   return fors;
 }
 
-forest_t[] meal(forest_t[] forests) {
-  return map!(a => [forest_t(-1, -1, +1)+a, forest_t(-1, +1, -1)+a, forest_t(+1, -1, -1)+a])(forests)
-    .join
-    .partition!(forest_invalid)
-    .quickSort
-    .uniq.array;
+forest_t[] meal(forest_t[] forests) {  
+  auto hash = ForMap(1<<(BITS_FOR_HASH*3));
+  return hash.uniquify(
+		       map!(a => [forest_t(-1, -1, +1)+a, forest_t(-1, +1, -1)+a, forest_t(+1, -1, -1)+a])(forests)
+		       .join
+		       .partition!(forest_invalid)
+		       .quickSort
+		       .uniq.array);
 }
 
 forest_t[] meal4(forest_t[] forests) {

@@ -1,7 +1,7 @@
 // See http://unriskinsight.blogspot.com/2014/06/fast-functional-goats-lions-and-wolves.html
 // Sascha Kratky (kratky@unrisk.com), uni software plus GmbH & MathConsult GmbH
 //
-// Modified by Jonathan Barnard to be fast.
+// Modified by Jonathan Barnard in an attempt to make it faster.
 // compilation requires Java 7
 
 import java.util.ArrayList;
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.HashSet;
 
-public final class MagicForest {
+public final class MagicForestHash {
     
     static final class Forest {
 	public int goats;
@@ -95,7 +95,7 @@ public final class MagicForest {
     
     public static void main(String[] args) {
 	if (args.length != 3) {
-	    System.err.println("USAGE: " + MagicForest.class.getSimpleName() +
+	    System.err.println("USAGE: " + MagicForestHash.class.getSimpleName() +
 			       " <goats> <wolves> <lions>");
 	    System.exit(-1);
 	}
