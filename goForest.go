@@ -60,7 +60,7 @@ func uniqueFors(forests []Forest) []Forest {
 	prevFor := &forests[0]
 	uForests = append(uForests, *prevFor)
 	for i := 1; i < len(forests); i++{
-		if *prevFor != forests[i] {
+		if *prevFor != forests[i] && !forestInvalid(&forests[i]) {
 			uForests = append(uForests, forests[i])
 			prevFor = &forests[i];
 		}
@@ -84,7 +84,8 @@ func meals(forests []Forest)[]Forest {
 		mealedForests[j].wolves = forests[i].wolves -1
 		mealedForests[j].lions = forests[i].lions -1
 		j++;
-	}/*
+	}	
+	/*
 	hash := make(map[Forest]bool)
 	for _, forest := range mealedForests {
 		hash[forest] = true
