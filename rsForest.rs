@@ -1,6 +1,7 @@
 extern crate collections;
 
-use std::iter::FlatMap;
+use std::cmp::Ordering;
+use std::os;
 
 struct Forest{
        goats : i32,
@@ -8,11 +9,31 @@ struct Forest{
        lions : i32
 }
 
-/*fn doMeal(x : &Forest) -> Vec<Forest>{
-   return vec!([Forest{goats : x.goats -1, wolves : x.wolves -1, lions: x.lions +1},	
-      Forest{goats : x.goats -1, wolves : x.wolves +1, lions: x.lions -1},	
-      Forest{goats : x.goats +1, wolves : x.wolves -1, lions: x.lions -1}])
-}*/
+impl Eq for Forest {
+    fn eq(&self, other: &Forest) -> bool { 
+        other.goats == self.goats &&
+	other.wolves == self.wolves && 
+	other.lions == self.lions}
+}
+
+impl Clone for Forest{
+    fn clone(&self) -> Forest{
+       Forest{goats: self.goats, wolves: self.wolves, lions: self.lions}
+    }
+}
+
+fn printForest(f : &Forest) {
+     print!("Forest [goats= {}, wolves= {}, lions= {}]", f.goats, f.lions, f.wolves); 
+}
+
+fn printForests(fors : &Vec<Forest>){
+   let mut i = 0;
+   while i < fors.len(){
+   	 printForest(fors.get(i));
+	 print!("\n");
+	 i+=1;
+   }
+}
 
 fn forestStable(forest : &Forest) -> bool {
   if forest.goats == 0{
@@ -25,54 +46,76 @@ fn forestInvalid(forest : &Forest) ->  bool {
   return forest.goats < 0 || forest.wolves < 0 || forest.lions < 0;
 } 
 
-fn forLessThan(f1: &Forest, f2: &Forest) -> bool{
-  let mut res : bool;
+fn forLessThan(f1: &Forest, f2: &Forest) -> Ordering{
   if f1.goats == f2.goats{
     if f1.wolves == f2.wolves {
       if f1.lions == f2.lions {
-	res = false;
+      	 Equal
       }else{
-	res = f1.lions < f2.lions;
+	f1.lions.cmp(&f2.lions)
       }
     }else {
-      res = f1.wolves < f2.wolves;
+	f1.wolves.cmp(&f2.wolves)
     }
   }else{
-    res = f1.goats < f2.goats;
+	f1.goats.cmp(&f2.goats)
   }
-  return res;
 }
 
-fn meal(forests: ~[Forest]) -> ~[Forest] {
-    let mut mealedForests = Vec::from_fn(forests.len(), |n| Forest{goats : 0, wolves: 0, lions: 0});	
-    let mut j = 0;
+fn meal(forests: &Vec<Forest>) -> Vec<Forest> {
+    let mut mealedForests: Vec<Forest> = Vec::with_capacity(forests.len()*3);
     let mut i = 0;
-    while i < forests.len(){
-        mealedForests.get(j).goats = forests[i].goats -1;
-	mealedForests.get(j).wolves = forests[i].wolves -1;
-	mealedForests.get(j).lions = forests[i].lions +1;
-	j+=1;
-	mealedForests.get(j).goats = forests[i].goats -1;
-	mealedForests.get(j).wolves = forests[i].wolves +1;
-	mealedForests.get(j).lions = forests[i].lions -1;
-	j+=1;
-	mealedForests.get(j).goats = forests[i].goats +1;
-	mealedForests.get(j).wolves = forests[i].wolves -1;
-	mealedForests.get(j).lions = forests[i].lions -1;
-	j+=1;
-	i+=1;
+    while i < forests.len() {
+    	  let x = &forests.get(i);
+    	  mealedForests.push(Forest{goats : x.goats -1, wolves : x.wolves -1, lions: x.lions +1});
+    	  mealedForests.push(Forest{goats : x.goats -1, wolves : x.wolves +1, lions: x.lions -1});
+    	  mealedForests.push(Forest{goats : x.goats +1, wolves : x.wolves -1, lions: x.lions -1});	
+	  i+=1;
     }
+    let (_, mut okForests) = mealedForests.clone().partition(|a| forestInvalid(a) );
+    okForests.sort_by(|a,b| forLessThan(a,b) );
+    okForests.dedup();
+    return okForests;
+}
 
-//  let mut it = forests.iter().flat_map(|&x|[doMeal(x)]);
+fn devouringPossible(forests: &Vec<Forest>) -> bool {
+  !(forests.len() < 1) && !(forests.iter().any(|x| forestStable(x)))
+}
 
-/*
-  return map!(a => [forest_t(-1, -1, +1)+a, forest_t(-1, +1, -1)+a, forest_t(+1, -1, -1)+a])(forests)
-    .join
-    .partition!(forest_invalid)
-    .quickSort
-    .uniq.array;*/
+fn stableForests(forests: &Vec<Forest>) -> Vec<Forest> {
+    let mut filteredForests: Vec<Forest> = Vec::with_capacity(3);
+    let mut i = 0;
+    while i < forests.len() {
+    	  if forestStable(forests.get(i)){
+	     let x = forests.get(i);
+	     filteredForests.push(Forest{goats : x.goats, wolves : x.wolves, lions: x.lions});
+	  }
+	  i+=1;
+    }
+    filteredForests
+}
+
+fn findStableForests(forest: Forest) -> Vec<Forest>{
+   let mut forests: Vec<Forest> = Vec::with_capacity(1);
+   forests.push(forest);
+   while devouringPossible(&forests){
+    forests = meal(&forests);
+  }
+  return stableForests(&forests);
 }
 
 fn main(){
-
+   let args = os::args();
+   if args.len() != 4{
+      print!("Error: input should be in the form of <goats> <wolves> <lions>\n");
+      return;
+   }  
+   let initialFor = Forest{goats: std::i32::parse_bytes(args[1].clone().into_bytes(),10).expect("Error: goats not an int.\n"), 
+       		          wolves: std::i32::parse_bytes(args[2].clone().into_bytes(),10).expect("Error: wolves not an int.\n"),
+			  lions:  std::i32::parse_bytes(args[3].clone().into_bytes(),10).expect("Error: lions not an int.\n")};
+   let stableFors = findStableForests(initialFor);
+   if stableFors.len() < 1 {
+      print!("No stable forests found.\n");
+   }
+   printForests(&stableFors);
 }
