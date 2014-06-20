@@ -8,7 +8,7 @@ import std.bitmanip;
 
 //Compile with ldc2 -O5 -release -disable-boundscheck MagicForest.d
 
-enum ulong BITS_FOR_HASH = 11;
+enum ulong BITS_FOR_HASH = 10;
 
 struct ForMap{
   BitArray bits;
@@ -94,10 +94,10 @@ forest_t[] quickSort(forest_t[] fors) pure nothrow {
 }
 
 forest_t[] meal(forest_t[] forests) {  
-  /*ulong hashBits = BITS_FOR_HASH*3;
-    ulong hashCap = 1<<hashBits;
-    auto hash = ForMap(hashCap);
-    return hash.uniquify(
+  /*  ulong hashBits = BITS_FOR_HASH*3;
+  ulong hashCap = 1<<hashBits;
+  auto hash = ForMap(hashCap);
+  return hash.uniquify(
 		       map!(a => [forest_t(-1, -1, +1)+a, forest_t(-1, +1, -1)+a, forest_t(+1, -1, -1)+a])(forests)
 		       .join
 		       .partition!(forest_invalid)
@@ -108,27 +108,7 @@ forest_t[] meal(forest_t[] forests) {
     .quickSort.uniq.array;
 }
 
-forest_t[] meal4(forest_t[] forests) {
-  auto arr = map!(a => [forest_t(-1, -1, +1)+a, forest_t(-1, +1, -1)+a, forest_t(+1, -1, -1)+a])(forests)
-    .join
-    .partition!(forest_invalid);
-    /*  forest_t[] arr = uninitializedArray!(forest_t[])(forests.length * 3);
-  size_t j = size_t.max;
-  foreach (ref const a; forests){
-    arr[++j] = forest_t(-1, -1, +1) + a;
-    arr[++j] = forest_t(-1, +1, -1) + a;
-    arr[++j] = forest_t(+1, -1, -1) + a;
-    }*/
-  bool[forest_t] hash;
-  //  foreach (tree ; arr.partition!forest_invalid){
-  foreach (tree ; arr){
-    hash[tree] = true;
-  }
-  return hash.keys;
-  //  return arr.uniqify(hash);
-}
-
-forest_t[] meal3(forest_t[] forests) {
+forest_t[] meal2(forest_t[] forests) {
   auto forestsAddr = forests.ptr;
   size_t forLen = forests.length;
   scope forest_t[] newFors = uninitializedArray!(forest_t[])(forLen*3);
