@@ -163,7 +163,8 @@ public final class jForest {
 	int prevW = forests.wAt(0);
 	int prevL = forests.lAt(0);
 	for(int i = 1; i < forests.length; i++){
-	    if(!(prevG == forests.gAt(i)
+	    if(forests.isValid(i) &&
+	       !(prevG == forests.gAt(i)
 		 && prevW == forests.wAt(i)
 		 && prevL == forests.lAt(i))){
 		newFors.add(forests.gAt(i), forests.wAt(i), forests.lAt(i));
