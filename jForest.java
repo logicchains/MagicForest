@@ -1,7 +1,7 @@
 // See http://unriskinsight.blogspot.com/2014/06/fast-functional-goats-lions-and-wolves.html
 // Sascha Kratky (kratky@unrisk.com), uni software plus GmbH & MathConsult GmbH
 //
-// Modified by Jonathan Barnard to be fast.
+// Modified by Jonathan Barnard to be slightly slower.
 // compilation requires Java 7
 
 import java.util.ArrayList;
