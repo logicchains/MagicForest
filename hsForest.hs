@@ -38,8 +38,9 @@ uniqForsRec :: (V.Vector Forest, V.Vector Forest) -> (V.Vector Forest, V.Vector 
 uniqForsRec (old, new)
    | old == V.empty = (old, new)
    | new == V.empty = moveIt
-   | V.last old == V.head new = uniqForsRec (V.init old,  new)
---   | otherwise = if (trace ("doing it: " ++ show old) True) then moveIt else (old,new)
+   | V.last old == V.last new = uniqForsRec (V.init old,  new)
+-- | V.last old == V.last new = if (trace ("Duplicates encountered: " ++ show  (V.last old)) True) then uniqForsRec (V.init old, new) else (old,new) 
+-- | otherwise = if (trace ("doing it: " ++ show old) True) then moveIt else (old,new)
    | otherwise =  moveIt 
    where moveIt = uniqForsRec (V.init old, V.snoc new (V.last old) )
 
@@ -48,7 +49,7 @@ uniqFors for = snd $ uniqForsRec (for, V.empty)
 
 meals :: V.Vector Forest -> V.Vector Forest
 meals fors = V.fromList $  S.toList $  S.fromList $ V.toList $ snd $ V.unstablePartition forInvalid $ V.concatMap meal fors
---meals fors = uniqFors $ snd $ V.unstablePartition forInvalid $ V.concatMap meal fors
+--meals fors = uniqFors $ sortFors $ snd $ V.unstablePartition forInvalid $ V.concatMap meal fors
 
 devouringImpossible :: V.Vector Forest -> Bool
 devouringImpossible for = not $ not (V.null for) && (not $ V.any forStable for)
