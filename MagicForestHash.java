@@ -36,7 +36,39 @@ public final class MagicForestHash {
 	public boolean isValid() {
 	    return !(this.goats < 0 || this.wolves < 0 || this.lions < 0);
 	}
-		
+
+        @Override
+        public int hashCode() {
+            int result = goats;
+            result = 31 * result + wolves;
+            result = 31 * result + lions;
+            return result;
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (this.getClass() != obj.getClass()) {
+                return false;
+            }
+            Forest other = (Forest) obj;
+            if (this.goats != other.goats) {
+                return false;
+            }
+            if (this.lions != other.lions) {
+                return false;
+            }
+            if (this.wolves != other.wolves) {
+                return false;
+            }
+            return true;
+        }
+
 	@Override
 	public String toString() {
 	    return "Forest [goats=" + this.goats + ", wolves=" + this.wolves +
