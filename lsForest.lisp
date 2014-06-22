@@ -62,11 +62,26 @@
 	  fors))
 
 (defun meals (forests)
-  (join-fors
-   (map '(vector) #'meal forests)))
+  (stable-sort
+   (join-fors
+    (map '(vector) #'meal forests))
+  #'for<))
+
+(defun dedup (forests)
+  (let (
+	(uniq-fors (make-array (length forests) :fill-pointer 0 :element-type 'forest))
+	(last-for (aref forests 0)))
+    (vector-push last-for uniq-fors)
+    (loop for f across forests do
+	  (if (for-equal f last-for)
+	      nil
+	    (progn
+	      (vector-push f uniq-fors)
+	      (setf last-for f))))
+    uniq-fors))
 
 (defun unique-meals (forests)
-  (remove-duplicates (meals forests) :test #'for-equal ))
+  (dedup (meals forests)))
 
 (defun devouring-possible (forests)
   (and 
