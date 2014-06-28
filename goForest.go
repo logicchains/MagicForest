@@ -1,161 +1,99 @@
 package main
 
-import(
+import (
 	"fmt"
-	"sort"
 	"os"
 	"strconv"
 )
 
-type Forest struct{
-	goats int
-	wolves int
-	lions int
+type Forest struct {
+	goats  uint32
+	wolves uint32
+	lions  uint32
 }
 
-func forestStable(aFor *Forest) bool {
-	if (aFor.goats == 0) {
+func (aFor Forest) forestStable() bool {
+	if aFor.goats == 0 {
 		return (aFor.wolves == 0) || (aFor.lions == 0)
 	}
 	return (aFor.wolves == 0) && (aFor.lions == 0)
 }
 
-func forestInvalid(aFor *Forest) bool {
+func (aFor Forest) forestInvalid() bool {
 	return (aFor.goats < 0 || aFor.wolves < 0 || aFor.lions < 0)
 }
 
-func compFors(f1, f2 *Forest) bool{
-	res := false
-	if(f1.goats == f2.goats){
-		if(f1.wolves == f2.wolves){
-			if(f1.lions == f2.lions){
-				res = false
-			}else{
-				res = f1.lions < f2.lions
-			}
-		}else {
-			res = f1.wolves < f2.wolves
-		}
-	}else{
-		res = f1.goats < f2.goats
+func meals(forests []Forest) []Forest {
+	uForests := make([]Forest, 0, len(forests) * 3)
+	m := make(map[Forest]struct{})
+	for _, v := range forests {
+		m[Forest{v.goats-1, v.wolves-1, v.lions+1}] = struct{}{}
+		m[Forest{v.goats-1, v.wolves+1, v.lions-1}] = struct{}{}
+		m[Forest{v.goats+1, v.wolves-1, v.lions-1}] = struct{}{}
 	}
-	return res
-}
-
-type ForList []Forest
-
-func (a ForList) Len() int {
-	return len(a) 
-}
-func (a ForList) Swap(i, j int){
-	a[i], a[j] = a[j], a[i] 
-}
-func (a ForList) Less(i, j int) bool{
-	return compFors(&a[i],&a[j])
-}
-
-func uniqueFors(forests []Forest) []Forest {
-	uForests := make([]Forest,0,len(forests))
-	sort.Sort(ForList(forests))
-	prevFor := &forests[0]
-	uForests = append(uForests, *prevFor)
-	for i := 1; i < len(forests); i++{
-		if *prevFor != forests[i] && !forestInvalid(&forests[i]) {
-			uForests = append(uForests, forests[i])
-			prevFor = &forests[i];
-		}
+	for k := range m {
+		uForests = append(uForests,k)
 	}
-	return uForests;
+	return uForests
 }
 
-func meals(forests []Forest)[]Forest {
-	j := 0
-	mealedForests := make([]Forest,len(forests)*3)
-	for i, _ := range forests{
-		mealedForests[j].goats = forests[i].goats -1
-		mealedForests[j].wolves = forests[i].wolves -1
-		mealedForests[j].lions = forests[i].lions +1
-		j++;
-		mealedForests[j].goats = forests[i].goats -1
-		mealedForests[j].wolves = forests[i].wolves +1
-		mealedForests[j].lions = forests[i].lions -1
-		j++;
-		mealedForests[j].goats = forests[i].goats +1
-		mealedForests[j].wolves = forests[i].wolves -1
-		mealedForests[j].lions = forests[i].lions -1
-		j++;
-	}	
-	/*
-	hash := make(map[Forest]bool)
-	for _, forest := range mealedForests {
-		hash[forest] = true
-	}
-	uniqueForests := make([]Forest,0,len(hash))
-	for key, _ := range hash{
-		uniqueForests = append(uniqueForests, key)
-	}
-	return uniqueForests*/
-	return uniqueFors(mealedForests);
-}
-
-func devouringPossible(forests []Forest) bool{
-	if len(forests) > 0{
-		for i, _ := range forests{
-			if forestStable(&forests[i]){
+func devouringPossible(forests []Forest) bool {
+	if len(forests) > 0 {
+		for _, v := range forests {
+			if v.forestStable() {
 				return false
-			}      
+			}
 		}
 		return true
-	}else{
-		return false
 	}
+	return false
 }
 
 func stableForests(forests []Forest) []Forest {
-	stableForests := make([]Forest,0,len(forests)*3)
-	for i, _ := range forests{
-		if(forestStable(&forests[i])){
-			stableForests = append(stableForests, forests[i])
+	stableForests := make([]Forest, 0, len(forests)*3)
+	for _, v := range forests {
+		if v.forestStable() {
+			stableForests = append(stableForests, v)
 		}
 	}
 
 	return stableForests
 }
 
-func findStableForests(forest Forest)[]Forest {
-	forests := make([]Forest,0,3)
+func findStableForests(forest Forest) []Forest {
+	forests := make([]Forest, 0, 3)
 	forests = append(forests, forest)
-	for ;devouringPossible(forests); {
+	for devouringPossible(forests) {
 		forests = meals(forests)
 	}
 	return stableForests(forests)
 }
 
 func main() {
-	if (len(os.Args) != 4) {
-		fmt.Println("Error: needs three arguments; goats, wolves, lions.");
-		return;
+	if len(os.Args) != 4 {
+		fmt.Println("Error: needs three arguments; goats, wolves, lions.")
+		return
 	}
 	goats, err := strconv.Atoi(os.Args[1])
-	if err != nil{
+	if err != nil {
 		fmt.Println("Error: incorrect goat entry.")
 	}
 	wolves, err := strconv.Atoi(os.Args[2])
-	if err != nil{
+	if err != nil {
 		fmt.Println("Error: incorrect wolves entry.")
 	}
 	lions, err := strconv.Atoi(os.Args[3])
-	if err != nil{
+	if err != nil {
 		fmt.Println("Error: incorrect lions entry.")
 	}
-	initialForest := Forest{goats, wolves, lions}
+	initialForest := Forest{uint32(goats), uint32(wolves), uint32(lions)}
 	stableForests := findStableForests(initialForest)
 	if len(stableForests) < 1 {
 		fmt.Println("no stable forests found.")
-	}else {
+	} else {
 		fmt.Println("Stable forest found:")
-		for _, aFor := range stableForests{
+		for _, aFor := range stableForests {
 			fmt.Printf("%v\n", aFor)
-		}		
+		}
 	}
 }

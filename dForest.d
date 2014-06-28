@@ -84,15 +84,6 @@ bool forLessThan(in ref forest_t f1, in ref forest_t f2) pure nothrow{
   return res;
 }
 
-forest_t[] quickSort(forest_t[] fors) pure nothrow {
-  if (fors.length >= 2) {
-    auto parts = partition3!(forLessThan)(fors, fors[$ / 2]);
-    parts[0].quickSort;
-    parts[2].quickSort;
-  }
-  return fors;
-}
-
 forest_t[] meal(forest_t[] forests) {  
   /*  ulong hashBits = BITS_FOR_HASH*3;
   ulong hashCap = 1<<hashBits;
@@ -105,7 +96,9 @@ forest_t[] meal(forest_t[] forests) {
   return map!(a => [forest_t(-1, -1, +1)+a, forest_t(-1, +1, -1)+a, forest_t(+1, -1, -1)+a])(forests)
     .join
     .partition!(forest_invalid)
-    .quickSort.uniq.array;
+    .sort!(forLessThan, SwapStrategy.stable)
+    .uniq
+    .array;
 }
 
 forest_t[] meal2(forest_t[] forests) {
